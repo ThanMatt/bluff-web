@@ -17,8 +17,72 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
       - run: yarn test --passWithNoTests
 
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Build
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              yarn build
+            fi
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              yarn build
+            fi
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - build/*
+
+  deploy:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - run: sudo apt-get update && sudo apt-get install -y python-dev
+      - run: sudo curl -O https://bootstrap.pypa.io/get-pip.py
+      - run: sudo python get-pip.py
+      - run: sudo pip install awscli --upgrade
+      - run: aws --version
+      - attach_workspace:
+          at: ~/repo
+      - run: ls -aslh
+      - run:
+          name: Deploy
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              aws s3 sync build s3://bluff-web-staging/ --delete
+              aws cloudfront create-invalidation --distribution-id E3C0LEWY722EB2 --paths / index.html
+            fi
+            if [ "${CIRCLE_BRANCH}" == "master"]; then
+              aws s3 sync build s3://bluff-web/ --delete
+              aws cloudfront create-invalidation --distribution-id E3C0LEWY722EB2 --paths / index.html
+            fi
+
 workflows:
   version: 2
   test:
     jobs:
       - test
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - develop
+                - master
