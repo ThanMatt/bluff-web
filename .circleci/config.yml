@@ -58,11 +58,11 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "develop" ]; then
               aws s3 sync build s3://bluff-web-staging/ --delete
-              aws cloudfront create-invalidation --distribution-id E3C0LEWY722EB2 --paths / index.html
+              aws cloudfront create-invalidation --distribution-id E3C0LEWY722EB2 --paths /index.html
             fi
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               aws s3 sync build s3://bluff-web/ --delete
-              aws cloudfront create-invalidation --distribution-id E3C0LEWY722EB2 --paths / index.html
+              aws cloudfront create-invalidation --distribution-id E3C0LEWY722EB2 --paths /index.html
             fi
 
 workflows:
