@@ -39,7 +39,7 @@ const Home = () => {
           {
             visibleForm ? null
               :
-              <Text>A hilarious bluffing game</Text>
+              <Text>Fool to win</Text>
           }
 
           <br />
