@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Typography, Layout, Row, Col } from 'antd'
+import { Button, Typography, Row, Col } from 'antd'
 import CreateLobbyForm from '../../components/CreateLobbyForm'
 import useForm from '../../utils/hooks/useForm'
 
